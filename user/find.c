@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
         find(argv[1],argv[2]);
     }else{
         printf("The number of parameter is wrong!\n");
-        exit(-1);
+        exit();
     }
-    exit(0);
+    exit();
 }

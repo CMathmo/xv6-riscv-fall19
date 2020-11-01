@@ -10,15 +10,14 @@ int main(int argc, char* argv[]){
     int index = 0;
     int pid;
     int flag = -1;
-    int singal;
     if(pipe(fd[index])<0){
         printf("ERROR!");
-        exit(-1);
+        exit();
     }
     pid = fork();
     if(pid == -1){
         printf("ERROR!");
-        exit(-1);
+        exit();
     }
     if(pid != 0){
         close(fd[index][0]);
@@ -26,7 +25,7 @@ int main(int argc, char* argv[]){
             write(fd[index][1],&i,sizeof(i));
         }
         close(fd[index][1]);
-        wait(&singal);
+        wait();
     }else{
         close(fd[index][1]);
         while(read(fd[index][0],&buf,sizeof(buf)) == sizeof(buf)){
@@ -36,12 +35,12 @@ int main(int argc, char* argv[]){
             }else if(buf % prime != 0 && flag == -1){
                 if(pipe(fd[index + 1])<0){
                     printf("ERROR!");
-                    exit(-1);
+                    exit();
                 }
                 pid = fork();
                 if(pid == -1){
                     printf("ERROR!");
-                    exit(-1);
+                    exit();
                 }
                 if(pid == 0){
                     index ++;
@@ -58,8 +57,8 @@ int main(int argc, char* argv[]){
         }
         close(fd[index][0]); 
         close(fd[index + 1][1]); 
-        wait(&singal);          
+        wait();          
     }
-    exit(0);
+    exit();
 }
 

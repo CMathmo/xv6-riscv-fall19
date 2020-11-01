@@ -9,6 +9,6 @@ int main(int argc, char* argv[]){
     }else{
         printf("The number of parameter is wrong!\n");
     }
-    return 0;
+    exit();
 }
 

@@ -9,7 +9,6 @@ int main(int argc, char* argv[]){
     char buf_f[1024];
     char buf_s[1024];
     int pid;
-    int singal;
     pipe(fd1);
     pipe(fd2);
     if((pid=fork())==0){//子进程
@@ -18,16 +17,16 @@ int main(int argc, char* argv[]){
         write(fd2[1],pong,strlen(pong));
         read(fd1[0],buf_s,sizeof(buf_s));
         printf("%d: received %s\n",getpid(),buf_s);
-        exit(0);
+        exit();
 
     }else{//父进程
         close(fd2[1]);
         close(fd1[0]);
         write(fd1[1],ping,strlen(ping));
         read(fd2[0],buf_f,sizeof(buf_f));
-        wait(&singal);
+        wait();
         printf("%d: received %s\n",getpid(),buf_f);
     }
-    exit(0);
+    exit();
 }
 
