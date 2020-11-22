@@ -5,7 +5,6 @@
 
 char* fmtname(char *path){
     char *p;
-    // Find first character after last slash.
     for(p=path+strlen(path); p >= path && *p != '/'; p--)
         ;
     p++;
@@ -42,6 +41,7 @@ void find(char *dir_path, char *filename){
                 }
                 memmove(p, de.name, DIRSIZ);
                 p[DIRSIZ] = 0;
+                //如果名字符合，将其输出
                 if(strcmp(de.name,filename) == 0){
                     printf("%s\n",buf);
                 }
@@ -49,6 +49,7 @@ void find(char *dir_path, char *filename){
                     printf("find: cannot stat %s\n", buf);
                     continue;
                 }
+                //如果文件为目录，则往下一级继续寻找
                 if(st.type == 1){
                     find(buf,filename);
                 }
@@ -59,18 +60,18 @@ void find(char *dir_path, char *filename){
 }
 
 int main(int argc, char *argv[]){
-    if(argc == 2){
+    if(argc == 2){//参数为1时，在当前目录寻找
         if(strcmp(".",argv[1]) == 0){
             printf(".\n");
         }else{
             find(".",argv[1]);
         }
-    }else if(argc == 3){
+    }else if(argc == 3){//参数为2时，在指定路径下寻找
         if(strcmp(fmtname(argv[1]),argv[2]) == 0){
             printf("%s\n",argv[1]);
         }
         find(argv[1],argv[2]);
-    }else{
+    }else{//参数错误
         printf("The number of parameter is wrong!\n");
         exit();
     }

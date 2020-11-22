@@ -18,7 +18,6 @@ int main(int argc, char* argv[]){
         read(fd1[0],buf_s,sizeof(buf_s));
         printf("%d: received %s\n",getpid(),buf_s);
         exit();
-
     }else{//父进程
         close(fd2[1]);
         close(fd1[0]);
