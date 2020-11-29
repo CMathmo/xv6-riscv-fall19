@@ -58,21 +58,38 @@ void binit(void)
 }
 
 static struct buf *
-bget_from(uint dev, uint blockno, int index)
+bgetnew(uint dev, uint blockno)
 {
   struct buf *b;
-  for (b = bcache.hashbucket[index].prev; b != &bcache.hashbucket[index]; b = b->prev)
+  int index = blockno % NBUCKETS;
+  int i;
+
+  
+  for(i = 0; i < NBUCKETS; i++)
   {
-    if (b->refcnt == 0)
+    acquire(&bcache.lock[i]);
+    for (b = bcache.hashbucket[i].prev; b != &bcache.hashbucket[i]; b = b->prev)
     {
-      b->dev = dev;
-      b->blockno = blockno;
-      b->valid = 0;
-      b->refcnt = 1;
-      release(&bcache.lock[index]);
-      acquiresleep(&b->lock);
-      return b;
+      if (b->refcnt == 0)
+      {  
+        b->next->prev = b->prev;
+        b->prev->next = b->next;
+        release(&bcache.lock[i]);
+        b->dev = dev;
+        b->blockno = blockno;
+        b->valid = 0;
+        b->refcnt = 1;
+        acquire(&bcache.lock[index]);
+        b->next = bcache.hashbucket[index].next;
+        b->prev = &bcache.hashbucket[index];
+        bcache.hashbucket[index].next->prev = b;
+        bcache.hashbucket[index].next = b;
+        release(&bcache.lock[index]);
+        acquiresleep(&b->lock);
+        return b;
+      }
     }
+    release(&bcache.lock[i]);
   }
   return 0;
 }
@@ -85,7 +102,6 @@ bget(uint dev, uint blockno)
 {
   struct buf *b;
   int index = blockno % NBUCKETS;
-  int i;
   acquire(&bcache.lock[index]);
 
   // Is the block already cached?
@@ -99,13 +115,12 @@ bget(uint dev, uint blockno)
       return b;
     }
   }
-
-  for(i = 0; i < NBUCKETS; i++)
-  {
-    b = bget_from(dev,blockno,i);
-    if(b) return b;
-  }
-  panic("bget: no buffers");
+  release(&bcache.lock[index]);
+  
+  b = bgetnew(dev,blockno);
+  if(!b)
+    panic("bget: no buffers");
+  return b;
 }
 
 // Return a locked buf with the contents of the indicated block.
